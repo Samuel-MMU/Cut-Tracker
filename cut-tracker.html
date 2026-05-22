@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Cut Tracker"/>
+<title>Elite Cut Tracker 🔥</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0a0a0a;--surface:#111;--card:#161616;--border:#222;
+    --accent:#ff4d1c;--gold:#f5b944;--text:#f0ede8;--muted:#666;
+    --green:#22c55e;--red:#ef4444;--warn:#f59e0b;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:Georgia,serif;min-height:100vh;overflow-x:hidden;}
+  input,textarea,button{font-family:Georgia,serif;}
+  input,textarea{
+    background:var(--card);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:10px 14px;font-size:15px;width:100%;outline:none;
+  }
+  textarea{resize:vertical;line-height:1.6;}
+  input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;background:transparent;}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px;}
+  .ghost{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;}
+  .label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+  .section-title{display:flex;align-items:center;gap:8px;color:var(--accent);font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;margin-top:8px;}
+  .section-title hr{flex:1;border:none;border-top:1px solid var(--border);margin-left:8px;}
+  .header{position:sticky;top:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100;border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
+  .header-title{font-size:14px;font-weight:900;letter-spacing:2px;color:var(--accent);}
+  .page{max-width:480px;margin:0 auto;padding:20px 16px 100px;}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(17,17,17,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100;}
+  .nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 14px;opacity:.4;transition:opacity .2s;}
+  .nav-btn.active{opacity:1;}
+  .nav-btn span:first-child{font-size:20px;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+  .nav-btn.active .nav-label{color:var(--accent);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;}
+  .stat-val{font-size:20px;font-weight:900;color:var(--text);margin:4px 0;}
+  .stat-lbl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .day-bar-wrap{height:40px;background:var(--border);border-radius:4px;overflow:hidden;position:relative;margin-bottom:4px;}
+  .day-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .4s;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:480px;width:100%;padding:28px;}
+  .dot{width:8px;height:8px;border-radius:4px;background:var(--border);transition:all .3s;}
+  .dot.active{width:20px;background:var(--accent);}
+  .row-sep{border-bottom:1px solid var(--border);padding:7px 0;display:flex;justify-content:space-between;}
+  .toggle-pair{display:flex;gap:10px;}
+  .toggle-pair button{flex:1;padding:10px;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:14px;font-weight:700;border:1px solid var(--border);background:var(--card);color:var(--muted);}
+  .toggle-pair button.on-green{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important;}
+  .toggle-pair button.on-red{background:var(--red)!important;border-color:var(--red)!important;color:#fff!important;}
+  .day-tab{flex-shrink:0;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:Georgia,serif;font-size:13px;font-weight:600;background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .day-tab.active{border-color:var(--accent);color:var(--accent);font-weight:800;}
+  .strategy-btn{font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:Georgia,serif;font-weight:600;background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .strategy-btn.active{border-color:var(--accent);color:var(--accent);}
+  .health-opt{font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Georgia,serif;text-align:left;border:1px solid var(--border);background:transparent;color:var(--muted);margin-bottom:4px;width:100%;}
+  .health-opt.active{border-color:var(--accent);color:var(--text);background:rgba(255,77,28,.1);}
+  .warn-box{background:rgba(239,68,68,.13);border:1px solid var(--red);border-radius:10px;padding:12px 14px;margin-bottom:16px;color:var(--red);font-size:13px;font-weight:700;}
+  .rule-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .rule-num{color:var(--accent);font-size:12px;font-weight:900;min-width:18px;}
+  .cheatsheet-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+  .snap-grid{display:grid;grid-template-columns:auto 1fr auto auto;gap:6px 12px;align-items:center;}
+  .quote-box{margin-top:20px;padding:16px;background:#0f0f0f;border-radius:14px;border-left:3px solid var(--accent);}
+  .hidden{display:none!important;}
+  .flex-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;}
+  .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .quick-btn{border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;cursor:pointer;font-family:Georgia,serif;font-size:14px;font-weight:700;}
+  .quick-btn .icon{font-size:20px;}
+  .accent-btn{background:var(--accent);color:#fff;border:none;}
+  .warn-btn{background:var(--warn);color:#fff;border:none;}
+  .ghost-btn-dark{background:transparent;color:var(--text);border:1px solid var(--border);}
+  #cheat-toggle-btn{background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-bottom:12px;}
+  .gym-toggle{padding:10px 18px;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:14px;font-weight:700;border:1px solid var(--border);background:var(--card);color:var(--muted);}
+  .gym-toggle.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">ELITE CUT 🔥</div>
+  <div id="save-status" style="font-size:11px;color:var(--muted)">saved ✓</div>
+</div>
+
+<!-- PAGES -->
+<div class="page">
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:11px;letter-spacing:3px;color:var(--accent);font-weight:800;text-transform:uppercase;margin-bottom:4px">Elite Cut Tracker</div>
+      <div id="db-week-title" style="font-size:28px;font-weight:900">Week —</div>
+      <div id="db-week-of" style="color:var(--muted);font-size:13px">Set your week dates →</div>
+    </div>
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="stat-card"><div style="font-size:22px">⚖️</div><div class="stat-val" id="db-avg-weight">—</div><div class="stat-lbl">Avg Weight</div></div>
+      <div class="stat-card"><div style="font-size:22px">🎯</div><div class="stat-val" id="db-to-go">—</div><div class="stat-lbl">Still to Go</div></div>
+      <div class="stat-card"><div style="font-size:22px">🍗</div><div class="stat-val" id="db-protein-days">0/7</div><div class="stat-lbl">Protein Days</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="label">Avg Daily Calories</div>
+          <div id="db-avg-kcal" style="font-size:32px;font-weight:900">No data yet</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--muted)">Gym target</div>
+          <div id="db-gym-target" style="font-weight:700;color:var(--gold)">—</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Rest target</div>
+          <div id="db-rest-target" style="font-weight:700;color:var(--gold)">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">This Week</div>
+      <div style="display:flex;gap:6px;justify-content:space-between" id="db-day-bars"></div>
+    </div>
+    <div class="quick-grid">
+      <button class="quick-btn accent-btn" onclick="goLog()"><span class="icon">📋</span>Log Today</button>
+      <button class="quick-btn warn-btn" onclick="openCheat()"><span class="icon">⚠️</span>Cheat Check</button>
+      <button class="quick-btn ghost-btn-dark" style="border:1px solid var(--border)" onclick="nav('week')"><span class="icon">📊</span>Week Summary</button>
+      <button class="quick-btn ghost-btn-dark" style="border:1px solid var(--border)" onclick="nav('setup')"><span class="icon">⚙️</span>Setup / Goals</button>
+    </div>
+    <div class="quote-box">
+      <div style="color:var(--muted);font-size:12px;font-style:italic;line-height:1.6">"Discipline is doing it on the days you don't feel like it. Those are actually the days that count most."</div>
+    </div>
+  </div>
+
+  <!-- DAY LOG -->
+  <div id="page-day" class="hidden">
+    <div class="flex-row" id="day-tabs"></div>
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <div style="flex:1">
+          <div class="label">Date</div>
+          <input id="day-date" type="text" placeholder="e.g. 22 May" oninput="saveDay('date',this.value)"/>
+        </div>
+        <div>
+          <div class="label">Gym</div>
+          <button class="gym-toggle" id="gym-toggle" onclick="toggleGym()">Rest</button>
+        </div>
+      </div>
+      <div class="label">Target: <span id="day-target" style="color:var(--gold)">— kcal</span></div>
+    </div>
+
+    <div class="section-title">🍽 Meals<hr/></div>
+    <div class="card" id="meals-container"></div>
+
+    <div class="section-title">🫙 Snacks<hr/></div>
+    <div class="card" id="snacks-container"></div>
+
+    <button id="cheat-toggle-btn" onclick="toggleCheatsheet()">📋 Show Calorie Cheat Sheet</button>
+    <div class="card hidden" id="cheatsheet">
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Chicken breast 200g</span><span style="color:var(--gold);font-weight:700;font-size:13px">~220 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Salmon 150g</span><span style="color:var(--gold);font-weight:700;font-size:13px">~280 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Tuna tin (drained)</span><span style="color:var(--gold);font-weight:700;font-size:13px">~120 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Eggs ×2</span><span style="color:var(--gold);font-weight:700;font-size:13px">~140 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Greek yoghurt 200g</span><span style="color:var(--gold);font-weight:700;font-size:13px">~130 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Protein shake</span><span style="color:var(--gold);font-weight:700;font-size:13px">~120 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">White rice 200g</span><span style="color:var(--gold);font-weight:700;font-size:13px">~260 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Oats 100g dry</span><span style="color:var(--gold);font-weight:700;font-size:13px">~370 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Sweet potato 200g</span><span style="color:var(--gold);font-weight:700;font-size:13px">~170 kcal</span></div>
+      <div class="cheatsheet-row"><span style="color:var(--text);font-size:13px">Mac & cheese bites lg</span><span style="color:var(--gold);font-weight:700;font-size:13px">~700 kcal (est)</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0"><span style="color:var(--text);font-size:13px">Sliced brisket large</span><span style="color:var(--gold);font-weight:700;font-size:13px">~600 kcal (est)</span></div>
+    </div>
+
+    <div class="section-title">📊 Totals<hr/></div>
+    <div class="card">
+      <div class="grid2" style="margin-bottom:12px">
+        <div><div class="label">Total kcal</div><input id="day-total" type="number" placeholder="0" oninput="saveDay('totalKcal',this.value)"/></div>
+        <div><div class="label">Water (L)</div><input id="day-water" type="number" step="0.1" placeholder="0.0" oninput="saveDay('water',this.value)"/></div>
+        <div><div class="label">Steps</div><input id="day-steps" type="number" placeholder="0" oninput="saveDay('steps',this.value)"/></div>
+      </div>
+      <div class="label">Protein Hit?</div>
+      <div class="toggle-pair" style="margin-bottom:14px">
+        <button id="prot-hit" onclick="setProtein(true)">✅ Hit</button>
+        <button id="prot-miss" onclick="setProtein(false)">❌ Miss</button>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="label">Hunger /10: <span id="hunger-val" style="color:var(--gold)">—</span></div>
+          <input type="range" min="0" max="10" id="hunger-range" oninput="saveDay('hunger',this.value);document.getElementById('hunger-val').textContent=this.value"/>
+        </div>
+        <div>
+          <div class="label">Energy /10: <span id="energy-val" style="color:var(--gold)">—</span></div>
+          <input type="range" min="0" max="10" id="energy-range" oninput="saveDay('energy',this.value);document.getElementById('energy-val').textContent=this.value"/>
+        </div>
+      </div>
+      <div style="margin-top:12px"><div class="label">Notes</div><textarea id="day-notes" rows="3" placeholder="How did today feel?" oninput="saveDay('notes',this.value)"></textarea></div>
+    </div>
+
+    <div class="section-title">⚖️ Weigh-In<hr/></div>
+    <div class="card">
+      <div class="label">Weight (kg) — fasted, post-toilet</div>
+      <input id="day-weighin" type="number" step="0.1" placeholder="e.g. 84.2" oninput="saveWeighIn(this.value)"/>
+    </div>
+  </div>
+
+  <!-- WEEK SUMMARY -->
+  <div id="page-week" class="hidden">
+    <div class="section-title">📊 Week Snapshot<hr/></div>
+    <div class="card" style="padding:12px 16px">
+      <div class="snap-grid" id="snap-grid">
+        <span class="label" style="margin:0">DAY</span><span class="label" style="margin:0">KCAL</span><span class="label" style="margin:0">P</span><span class="label" style="margin:0">KG</span>
+      </div>
+    </div>
+    <div class="section-title">⚖️ Weight Summary<hr/></div>
+    <div class="card">
+      <div class="grid2" style="margin-bottom:16px">
+        <div><div class="label">This Week Avg</div><div id="wk-avg-w" style="font-size:24px;font-weight:900">—</div></div>
+        <div><div class="label">Protein Days</div><div id="wk-prot-days" style="font-size:24px;font-weight:900">—</div></div>
+        <div><div class="label">Avg Daily kcal</div><div id="wk-avg-kcal" style="font-size:24px;font-weight:900;color:var(--gold)">—</div></div>
+        <div><div class="label">Avg Hunger / Energy</div><div id="wk-h-e" style="font-size:18px;font-weight:700">— / —</div></div>
+      </div>
+      <div class="grid2">
+        <div><div class="label">Last Week Avg (kg)</div><input id="last-week-avg" type="number" step="0.1" placeholder="—" oninput="saveWeekField('lastWeekAvg',this.value)"/></div>
+        <div><div class="label">Total Lost (kg)</div><input id="total-lost" type="number" step="0.1" placeholder="—" oninput="saveWeekField('totalLost',this.value)"/></div>
+      </div>
+    </div>
+    <div class="section-title">✍️ Review<hr/></div>
+    <div class="card">
+      <div style="margin-bottom:12px"><div class="label">🏆 Biggest Win</div><input id="biggest-win" type="text" placeholder="..." oninput="saveWeekField('biggestWin',this.value)"/></div>
+      <div style="margin-bottom:12px"><div class="label">🔧 What to Fix</div><input id="what-fix" type="text" placeholder="..." oninput="saveWeekField('whatToFix',this.value)"/></div>
+      <div style="margin-bottom:14px"><div class="label">📝 Note to Self</div><input id="note-self" type="text" placeholder="..." oninput="saveWeekField('noteToSelf',this.value)"/></div>
+      <div class="label">Next Week Strategy</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="strategy-btns">
+        <button class="strategy-btn" onclick="setStrategy('Same target')">Same target</button>
+        <button class="strategy-btn" onclick="setStrategy('Cut 100–150 kcal')">Cut 100–150 kcal</button>
+        <button class="strategy-btn" onclick="setStrategy('Reverse diet')">Reverse diet</button>
+      </div>
+    </div>
+    <div class="section-title">🧠 Monthly Health Check<hr/></div>
+    <div class="card">
+      <div id="warn-negatives" class="warn-box hidden">⚠️ 3+ negatives detected — deficit too aggressive. Add 150–200 kcal back immediately.</div>
+      <div class="grid2" id="health-grid"></div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="page-setup" class="hidden">
+    <div class="section-title">🎯 Your Numbers<hr/></div>
+    <div class="card">
+      <div class="grid2">
+        <div><div class="label">Body Weight (kg)</div><input id="s-body" type="number" step="0.1" placeholder="—" oninput="saveWeekField('bodyWeight',this.value)"/></div>
+        <div><div class="label">Goal Weight (kg)</div><input id="s-goal" type="number" step="0.1" placeholder="—" oninput="saveWeekField('goalWeight',this.value)"/></div>
+        <div><div class="label">Gym Day kcal</div><input id="s-gym" type="number" placeholder="—" oninput="saveWeekField('gymKcal',this.value)"/></div>
+        <div><div class="label">Rest Day kcal</div><input id="s-rest" type="number" placeholder="—" oninput="saveWeekField('restKcal',this.value)"/></div>
+        <div><div class="label">Protein target (g)</div><input id="s-prot" type="number" placeholder="—" oninput="saveWeekField('protein',this.value)"/></div>
+        <div><div class="label">Daily Steps</div><input id="s-steps" type="number" placeholder="—" oninput="saveWeekField('steps',this.value)"/></div>
+      </div>
+      <div style="margin-top:12px"><div class="label">Week Of</div><input id="s-weekof" type="text" placeholder="e.g. 22 May 2026" oninput="saveWeekField('weekOf',this.value)"/></div>
+      <div style="margin-top:12px"><div class="label">Week #</div><input id="s-weeknum" type="number" placeholder="1" oninput="saveWeekField('weekNum',this.value)"/></div>
+    </div>
+    <div class="section-title">💬 Your Why<hr/></div>
+    <div class="card"><textarea id="s-why" rows="4" placeholder="Write it here. Read it when it gets hard..." oninput="saveWeekField('why',this.value)"></textarea></div>
+    <div class="section-title">⚡ What's Working<hr/></div>
+    <div class="card"><textarea id="s-working" rows="3" placeholder="Meals, habits, strategies that are clicking..." oninput="saveWeekField('whatWorking',this.value)"></textarea></div>
+    <div class="section-title">📋 The Rules<hr/></div>
+    <div class="card" style="padding:16px 20px">
+      <div class="rule-row"><span class="rule-num">1.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Always overestimate — mark guesses (est)</span></div>
+      <div class="rule-row"><span class="rule-num">2.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Hard floor: NEVER below 1,500 kcal</span></div>
+      <div class="rule-row"><span class="rule-num">3.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Protein every day — it protects everything</span></div>
+      <div class="rule-row"><span class="rule-num">4.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Pre-gym: carbs + protein 60–90 min before</span></div>
+      <div class="rule-row"><span class="rule-num">5.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Post-gym: protein + carbs within 30–45 min</span></div>
+      <div class="rule-row"><span class="rule-num">6.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Weigh fasted, post-toilet, same time daily</span></div>
+      <div class="rule-row"><span class="rule-num">7.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Judge the weekly average — not the daily</span></div>
+      <div class="rule-row"><span class="rule-num">8.</span><span style="color:var(--text);font-size:14px;line-height:1.5">2 weeks no drop → cut 100–150 kcal</span></div>
+      <div class="rule-row"><span class="rule-num">9.</span><span style="color:var(--text);font-size:14px;line-height:1.5">Energy tanks 7+ days → reverse diet</span></div>
+      <div style="display:flex;gap:10px;padding:8px 0"><span class="rule-num">10.</span><span style="color:var(--text);font-size:14px;line-height:1.5">0.5–1% bodyweight loss per week = perfect</span></div>
+    </div>
+    <button class="btn" style="width:100%" onclick="nav('dashboard')">Save & Back to Dashboard</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="nav('dashboard')"><span>🏠</span><span class="nav-label">Home</span></button>
+  <button class="nav-btn" id="nav-day" onclick="nav('day')"><span>📋</span><span class="nav-label">Log</span></button>
+  <button class="nav-btn" id="nav-week" onclick="nav('week')"><span>📊</span><span class="nav-label">Week</span></button>
+  <button class="nav-btn" id="nav-setup" onclick="nav('setup')"><span>⚙️</span><span class="nav-label">Setup</span></button>
+</div>
+
+<!-- CHEAT MODAL -->
+<div class="modal-overlay hidden" id="cheat-overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="color:var(--accent);font-weight:900;font-size:16px;letter-spacing:1px">⚠️ BEFORE YOU CHEAT</span>
+      <button onclick="closeCheat()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer">×</button>
+    </div>
+    <div id="cheat-q-wrap">
+      <div id="cheat-qnum" style="color:var(--muted);font-size:12px;margin-bottom:8px">Question 1 of 10</div>
+      <div style="background:#0a0a0a;border-radius:12px;padding:18px;margin-bottom:20px;min-height:80px">
+        <div id="cheat-q" style="color:var(--text);font-size:15px;line-height:1.65;font-style:italic"></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:space-between">
+        <button class="ghost" onclick="closeCheat()">Skip</button>
+        <button class="btn" onclick="cheatNext()">Next →</button>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:14px;justify-content:center" id="cheat-dots"></div>
+    </div>
+    <div id="cheat-done" class="hidden" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">🤔</div>
+      <div style="color:var(--text);font-size:17px;font-weight:700;margin-bottom:12px">You've thought it through.</div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px">A deliberate choice is not a failure. If you still want it — eat it, enjoy it, move on. If you're hesitating, that's your answer.</div>
+      <button class="btn" onclick="closeCheat()">I'm clear on my choice</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const STORAGE_KEY = 'eliteCutTracker_v1';
+
+const CHEAT_QS = [
+  "Are you hungry or just craving it? Is your stomach actually empty, or does your brain just want the taste?",
+  "When did you last eat? If it was less than 2–3 hours ago, you're probably not hungry.",
+  "Did you eat enough satiating food today? Protein, fiber, water — or did you under-eat?",
+  "Are you bored right now? If you had something engaging to do, would food even cross your mind?",
+  "Are you stressed, anxious, or emotional? Reaching for food to feel better, not because you need fuel?",
+  "Is this a genuine craving or a habit? Do you always want to order at this time, in this situation?",
+  "Is this one meal or will it spiral? Be real — can you stop at one, or does it turn into a full day?",
+  "Is this a conscious choice or autopilot? Did you decide this, or did the urge just take over?",
+  "What are you actually looking for right now? Comfort? Stimulation? Reward? Food won't fix those long term.",
+  "If you still want it after all this — own it. A deliberate choice isn't failure. But if you're hesitating — that's your answer."
+];
+
+const HEALTH_OPTS = {
+  digestion:['Good','Slow','Bloated'],
+  strength:['Holding','Declining','Improving'],
+  energy:['Normal','Low','Tanking'],
+  mood:['Stable','Up','Down'],
+  recovery:['Fast','Normal','Slow'],
+  sleep:['Good','Broken','Poor']
+};
+const HEALTH_NEG = ['Slow','Bloated','Declining','Tanking','Down','Low','Broken','Poor'];
+
+function emptyDay(){
+  return {date:'',gym:false,meals:['','','','',''],snacks:['',''],
+    totalKcal:'',proteinHit:null,water:'',steps:'',hunger:'5',energy:'5',notes:''};
+}
+function emptyWeek(){
+  const days={};DAYS.forEach(d=>days[d]=emptyDay());
+  const weighIns={};DAYS.forEach(d=>weighIns[d]='');
+  return {weekOf:'',weekNum:'',bodyWeight:'',goalWeight:'',gymKcal:'',restKcal:'',
+    protein:'',steps:'',days,weighIns,why:'',whatWorking:'',lastWeekAvg:'',totalLost:'',
+    biggestWin:'',whatToFix:'',noteToSelf:'',nextWeekStrategy:'',
+    monthlyHealth:{digestion:'',strength:'',energy:'',mood:'',recovery:'',sleep:''}};
+}
+
+let state = {currentView:'dashboard',weeks:[emptyWeek()],activeWeek:0,activeDay:'Mon'};
+
+function loadState(){
+  try{
+    const s=localStorage.getItem(STORAGE_KEY);
+    if(s) state=JSON.parse(s);
+  }catch(e){}
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    const el=document.getElementById('save-status');
+    el.textContent='saved ✓';el.style.color='var(--muted)';
+  }catch(e){}
+}
+function week(){return state.weeks[state.activeWeek];}
+function day(){return week().days[state.activeDay];}
+
+// ── Navigation ──────────────────────────────────────────────────────
+const PAGES=['dashboard','day','week','setup'];
+function nav(p){
+  PAGES.forEach(id=>{
+    document.getElementById('page-'+id).classList.toggle('hidden',id!==p);
+    document.getElementById('nav-'+id).classList.toggle('active',id===p);
+  });
+  state.currentView=p;
+  if(p==='dashboard') renderDashboard();
+  if(p==='day') renderDay();
+  if(p==='week') renderWeek();
+  if(p==='setup') renderSetup();
+  window.scrollTo(0,0);
+}
+function goLog(){
+  const today=new Date().getDay();
+  const dayIdx=today===0?6:today-1;
+  state.activeDay=DAYS[dayIdx];
+  nav('day');
+}
+
+// ── Dashboard ───────────────────────────────────────────────────────
+function renderDashboard(){
+  const w=week();
+  document.getElementById('db-week-title').textContent='Week '+(w.weekNum||'—');
+  document.getElementById('db-week-of').textContent=w.weekOf||'Set your week dates →';
+  document.getElementById('db-gym-target').textContent=w.gymKcal?w.gymKcal+' kcal':'—';
+  document.getElementById('db-rest-target').textContent=w.restKcal?w.restKcal+' kcal':'—';
+
+  const wins=Object.values(w.weighIns).filter(v=>v&&!isNaN(+v)).map(Number);
+  const avgW=wins.length?(wins.reduce((a,b)=>a+b,0)/wins.length).toFixed(1):null;
+  document.getElementById('db-avg-weight').textContent=avgW?avgW+'kg':'—';
+  const toGo=w.bodyWeight&&w.goalWeight?(+w.bodyWeight-+w.goalWeight).toFixed(1):null;
+  document.getElementById('db-to-go').textContent=toGo?toGo+'kg':'—';
+  const protDays=Object.values(w.days).filter(d=>d.proteinHit===true).length;
+  document.getElementById('db-protein-days').textContent=protDays+'/7';
+
+  const kcals=Object.values(w.days).map(d=>+d.totalKcal).filter(v=>v>0);
+  const avgK=kcals.length?Math.round(kcals.reduce((a,b)=>a+b,0)/kcals.length):null;
+  const el=document.getElementById('db-avg-kcal');
+  el.textContent=avgK?avgK+' kcal':'No data yet';
+  el.style.color=avgK&&w.gymKcal&&avgK<+w.gymKcal?'var(--green)':'var(--text)';
+
+  const bars=document.getElementById('db-day-bars');
+  bars.innerHTML='';
+  DAYS.forEach(d=>{
+    const dy=w.days[d];
+    const kcal=+dy.totalKcal;
+    const target=dy.gym?+w.gymKcal:+w.restKcal;
+    const pct=kcal&&target?Math.min(kcal/target,1.15):0;
+    const over=kcal>target&&target>0;
+    const btn=document.createElement('button');
+    btn.style.cssText='flex:1;background:'+(state.activeDay===d?'rgba(255,77,28,.13)':'transparent')+';border:1px solid '+(state.activeDay===d?'var(--accent)':'var(--border)')+';border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;';
+    btn.innerHTML=`<div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">${d}</div>
+      <div class="day-bar-wrap"><div class="day-bar-fill" style="height:${pct*100}%;background:${over?'var(--red)':'var(--green)'}"></div></div>
+      <div style="font-size:9px;color:${dy.proteinHit===true?'var(--green)':dy.proteinHit===false?'var(--red)':'var(--muted)'}">${dy.proteinHit===true?'✅':dy.proteinHit===false?'❌':'·'}</div>`;
+    btn.onclick=()=>{state.activeDay=d;nav('day');};
+    bars.appendChild(btn);
+  });
+}
+
+// ── Day Log ─────────────────────────────────────────────────────────
+function renderDay(){
+  // tabs
+  const tabs=document.getElementById('day-tabs');tabs.innerHTML='';
+  DAYS.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='day-tab'+(state.activeDay===d?' active':'');
+    b.textContent=d;b.onclick=()=>{state.activeDay=d;renderDay();};
+    tabs.appendChild(b);
+  });
+  const dy=day();const w=week();
+  document.getElementById('day-date').value=dy.date||'';
+  const gym=document.getElementById('gym-toggle');
+  gym.textContent=dy.gym?'💪 Yes':'Rest';
+  gym.classList.toggle('active',dy.gym);
+  document.getElementById('day-target').textContent=(dy.gym?w.gymKcal:w.restKcal)||'—'+' kcal';
+  // meals
+  const mc=document.getElementById('meals-container');mc.innerHTML='';
+  dy.meals.forEach((m,i)=>{
+    const inp=document.createElement('input');inp.type='text';inp.placeholder='Meal '+(i+1)+' — food + kcal';
+    inp.value=m;inp.style.marginBottom=i<4?'10px':'0';
+    inp.oninput=e=>{const meals=[...day().meals];meals[i]=e.target.value;saveDay('meals',meals);};
+    mc.appendChild(inp);
+  });
+  // snacks
+  const sc=document.getElementById('snacks-container');sc.innerHTML='';
+  dy.snacks.forEach((s,i)=>{
+    const inp=document.createElement('input');inp.type='text';inp.placeholder='Snack '+(i+1);
+    inp.value=s;inp.style.marginBottom=i<1?'10px':'0';
+    inp.oninput=e=>{const snacks=[...day().snacks];snacks[i]=e.target.value;saveDay('snacks',snacks);};
+    sc.appendChild(inp);
+  });
+  document.getElementById('day-total').value=dy.totalKcal||'';
+  document.getElementById('day-water').value=dy.water||'';
+  document.getElementById('day-steps').value=dy.steps||'';
+  // protein buttons
+  document.getElementById('prot-hit').className=dy.proteinHit===true?'on-green':'';
+  document.getElementById('prot-miss').className=dy.proteinHit===false?'on-red':'';
+  document.getElementById('hunger-range').value=dy.hunger||5;
+  document.getElementById('hunger-val').textContent=dy.hunger||'—';
+  document.getElementById('energy-range').value=dy.energy||5;
+  document.getElementById('energy-val').textContent=dy.energy||'—';
+  document.getElementById('day-notes').value=dy.notes||'';
+  document.getElementById('day-weighin').value=w.weighIns[state.activeDay]||'';
+}
+function toggleGym(){
+  const current=day().gym;saveDay('gym',!current);
+  const gym=document.getElementById('gym-toggle');
+  gym.textContent=!current?'💪 Yes':'Rest';gym.classList.toggle('active',!current);
+  const w=week();
+  document.getElementById('day-target').textContent=((!current?w.gymKcal:w.restKcal)||'—')+' kcal';
+}
+function saveDay(field,val){
+  week().days[state.activeDay][field]=val;saveState();
+}
+function saveWeighIn(val){
+  week().weighIns[state.activeDay]=val;saveState();
+}
+function setProtein(hit){
+  const cur=day().proteinHit;
+  saveDay('proteinHit',cur===hit?null:hit);
+  document.getElementById('prot-hit').className=day().proteinHit===true?'on-green':'';
+  document.getElementById('prot-miss').className=day().proteinHit===false?'on-red':'';
+}
+function toggleCheatsheet(){
+  const cs=document.getElementById('cheatsheet');
+  const btn=document.getElementById('cheat-toggle-btn');
+  cs.classList.toggle('hidden');
+  btn.textContent=cs.classList.contains('hidden')?'📋 Show Calorie Cheat Sheet':'📋 Hide Calorie Cheat Sheet';
+}
+
+// ── Week Summary ────────────────────────────────────────────────────
+function renderWeek(){
+  const w=week();
+  // snapshot
+  const grid=document.getElementById('snap-grid');
+  // remove all rows except header (first 4 children)
+  while(grid.children.length>4) grid.removeChild(grid.lastChild);
+  DAYS.forEach(d=>{
+    const dy=w.days[d];
+    const s1=document.createElement('span');s1.style.color='var(--muted)';s1.style.fontSize='13px';s1.textContent=d;
+    const s2=document.createElement('span');s2.style.fontSize='13px';s2.style.fontWeight='700';
+    s2.style.color=+dy.totalKcal>0?'var(--text)':'var(--muted)';s2.textContent=dy.totalKcal||'—';
+    const s3=document.createElement('span');s3.style.fontSize='13px';
+    s3.textContent=dy.proteinHit===true?'✅':dy.proteinHit===false?'❌':'·';
+    const s4=document.createElement('span');s4.style.color='var(--gold)';s4.style.fontSize='13px';s4.style.fontWeight='700';
+    s4.textContent=w.weighIns[d]||'—';
+    [s1,s2,s3,s4].forEach(s=>grid.appendChild(s));
+  });
+  // averages
+  const wins=Object.values(w.weighIns).filter(v=>v&&!isNaN(+v)).map(Number);
+  const avgW=wins.length?(wins.reduce((a,b)=>a+b,0)/wins.length).toFixed(1)+'kg':null;
+  document.getElementById('wk-avg-w').textContent=avgW||'—';
+  const pd=DAYS.filter(d=>w.days[d].proteinHit===true).length;
+  const pdEl=document.getElementById('wk-prot-days');
+  pdEl.textContent=pd+'/7';pdEl.style.color=pd>=5?'var(--green)':pd>=3?'var(--warn)':'var(--red)';
+  const kcals=Object.values(w.days).map(d=>+d.totalKcal).filter(v=>v>0);
+  document.getElementById('wk-avg-kcal').textContent=kcals.length?Math.round(kcals.reduce((a,b)=>a+b,0)/kcals.length)+'':'—';
+  const hs=DAYS.map(d=>+w.days[d].hunger).filter(v=>v>0);
+  const es=DAYS.map(d=>+w.days[d].energy).filter(v=>v>0);
+  const avgH=hs.length?(hs.reduce((a,b)=>a+b,0)/hs.length).toFixed(1):'—';
+  const avgE=es.length?(es.reduce((a,b)=>a+b,0)/es.length).toFixed(1):'—';
+  document.getElementById('wk-h-e').textContent=avgH+' / '+avgE;
+  // fields
+  document.getElementById('last-week-avg').value=w.lastWeekAvg||'';
+  document.getElementById('total-lost').value=w.totalLost||'';
+  document.getElementById('biggest-win').value=w.biggestWin||'';
+  document.getElementById('what-fix').value=w.whatToFix||'';
+  document.getElementById('note-self').value=w.noteToSelf||'';
+  // strategy
+  document.querySelectorAll('.strategy-btn').forEach(b=>b.classList.toggle('active',b.textContent===w.nextWeekStrategy));
+  // health
+  const hg=document.getElementById('health-grid');hg.innerHTML='';
+  let negCount=0;
+  Object.entries(HEALTH_OPTS).forEach(([key,opts])=>{
+    if(HEALTH_NEG.includes(w.monthlyHealth[key])) negCount++;
+    const wrap=document.createElement('div');
+    const lbl=document.createElement('div');lbl.className='label';lbl.textContent=key.charAt(0).toUpperCase()+key.slice(1);
+    wrap.appendChild(lbl);
+    opts.forEach(opt=>{
+      const b=document.createElement('button');b.className='health-opt'+(w.monthlyHealth[key]===opt?' active':'');
+      b.textContent=opt;b.onclick=()=>{w.monthlyHealth[key]=opt;saveState();renderWeek();};
+      wrap.appendChild(b);
+    });
+    hg.appendChild(wrap);
+  });
+  document.getElementById('warn-negatives').classList.toggle('hidden',negCount<3);
+}
+function saveWeekField(f,v){week()[f]=v;saveState();}
+function setStrategy(s){week().nextWeekStrategy=s;saveState();document.querySelectorAll('.strategy-btn').forEach(b=>b.classList.toggle('active',b.textContent===s));}
+
+// ── Setup ───────────────────────────────────────────────────────────
+function renderSetup(){
+  const w=week();
+  ['bodyWeight','goalWeight','gymKcal','restKcal','protein','steps'].forEach((f,i)=>{
+    const ids=['s-body','s-goal','s-gym','s-rest','s-prot','s-steps'];
+    document.getElementById(ids[i]).value=w[f]||'';
+  });
+  document.getElementById('s-weekof').value=w.weekOf||'';
+  document.getElementById('s-weeknum').value=w.weekNum||'';
+  document.getElementById('s-why').value=w.why||'';
+  document.getElementById('s-working').value=w.whatWorking||'';
+}
+
+// ── Cheat modal ─────────────────────────────────────────────────────
+let cheatStep=0;
+function openCheat(){
+  cheatStep=0;renderCheat();
+  document.getElementById('cheat-overlay').classList.remove('hidden');
+}
+function closeCheat(){document.getElementById('cheat-overlay').classList.add('hidden');}
+function cheatNext(){cheatStep++;renderCheat();}
+function renderCheat(){
+  const done=cheatStep>=CHEAT_QS.length;
+  document.getElementById('cheat-q-wrap').classList.toggle('hidden',done);
+  document.getElementById('cheat-done').classList.toggle('hidden',!done);
+  if(!done){
+    document.getElementById('cheat-qnum').textContent='Question '+(cheatStep+1)+' of '+CHEAT_QS.length;
+    document.getElementById('cheat-q').textContent='"'+CHEAT_QS[cheatStep]+'"';
+    const dots=document.getElementById('cheat-dots');dots.innerHTML='';
+    CHEAT_QS.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i<=cheatStep?' active':'');dots.appendChild(d);});
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────
+loadState();
+nav(state.currentView||'dashboard');
+</script>
+</body>
+</html>
